@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce;
     public float jumpCooldown;
     public float airMultiplier;
+    public Animator animator;
+    public Vector3 playerCurrentSpeed;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -71,11 +73,21 @@ public class PlayerMovement : MonoBehaviour
     private void MovePlayer()
     {
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        playerCurrentSpeed = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        if(playerCurrentSpeed.magnitude > 0f)
+        {
+            animator.SetBool("isWalking", true); 
+        }
+        if(playerCurrentSpeed.magnitude <= 0.1f)
+        {
+            animator.SetBool("isWalking", false); 
+        }
         
         //on ground
         if(grounded)
         {
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);   
+            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
         }
 
         //in air
@@ -101,8 +113,9 @@ public class PlayerMovement : MonoBehaviour
     {
         //reset y velocity
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
+        //jump force upwards
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+        animator.SetTrigger("isJumping");
 
     }
 
