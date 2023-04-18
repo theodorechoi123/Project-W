@@ -5,26 +5,48 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed;
+    private float moveSpeed;
+    public float walkSpeed;
+    public float sprintSpeed;
     public Transform orientation;
-    public float groundDrag;
-    public float playerHeight;
-    public LayerMask isGround;
-    public float jumpForce;
-    public float jumpCooldown;
-    public float airMultiplier;
-    public Animator animator;
-    public Vector3 playerCurrentSpeed;
-
-    [Header("Keybinds")]
-    public KeyCode jumpKey = KeyCode.Space;
-
-    bool readyToJump = true;
-    bool grounded;
     float horizontalInput;
     float verticalInput;
     Vector3 moveDirection;
+    [Header("Ground Check")]
+    public float groundDrag;
+    public float playerHeight;
+    public LayerMask isGround;
+    bool grounded;
+    [Header("Jumping")]
+    public float jumpForce;
+    public float jumpCooldown;
+    public float airMultiplier;
+    bool readyToJump = true;
+    [Header("Crouching")]
+    public float crouchSpeed;
+    private bool isCrouching;
+    [Header("Animations")]
+    public Animator animator;
+    bool isWalking;
+    [Header("State Handler")]
+    public Vector3 playerCurrentSpeed;
+    public MovementState currentState;
+
+    [Header("Keybinds")]
+    public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode sprintKey = KeyCode.LeftShift;
+    public KeyCode crouchKey = KeyCode.LeftControl;
+    [Header("Other")]
     Rigidbody rb;
+    
+
+    public enum MovementState
+    {
+        walking,
+        sprinting,
+        crouching,
+        air,
+    }
 
 
     // Start is called before the first frame update
@@ -32,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        
     }
 
     // Update is called once per frame
@@ -49,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
 
         MyInput();
         SpeedControl();
+        StateHandler();
     }
 
     void FixedUpdate()
@@ -68,21 +92,52 @@ public class PlayerMovement : MonoBehaviour
             Jump();
             Invoke(nameof(ResetJump), jumpCooldown);
         }
+
+        if(Input.GetKey(crouchKey))
+        {
+            animator.SetBool("isCrouching", true);
+            readyToJump = false;
+        }
+        if(Input.GetKeyUp(crouchKey))
+        {
+            animator.SetBool("isCrouching", false);
+            readyToJump = true;
+        }
+    }
+
+    private void StateHandler()
+    {
+        //mode - crouch
+        if(Input.GetKeyDown(crouchKey))
+        {
+            currentState = MovementState.crouching;
+            moveSpeed = crouchSpeed;
+        }
+        //mode - sprint
+        if(grounded && Input.GetKey(sprintKey) && currentState != MovementState.crouching)
+        {
+            currentState = MovementState.sprinting;
+            moveSpeed = sprintSpeed;
+        }
+        //mode - walk
+        if(grounded && !Input.GetKey(sprintKey) && !Input.GetKey(crouchKey))
+        {
+            currentState = MovementState.walking;
+            moveSpeed = walkSpeed;
+        }
+        //mode - air
+        if(Input.GetKey(jumpKey))
+        {
+            currentState = MovementState.air;
+        }
     }
 
     private void MovePlayer()
     {
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        playerCurrentSpeed = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
-        if(playerCurrentSpeed.magnitude > 0f)
-        {
-            animator.SetBool("isWalking", true); 
-        }
-        if(playerCurrentSpeed.magnitude <= 0.1f)
-        {
-            animator.SetBool("isWalking", false); 
-        }
+        isWalking = rb.velocity.magnitude > 0.1f;
+        animator.SetBool("isWalking", isWalking);
         
         //on ground
         if(grounded)
@@ -116,7 +171,6 @@ public class PlayerMovement : MonoBehaviour
         //jump force upwards
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         animator.SetTrigger("isJumping");
-
     }
 
     private void ResetJump()
