@@ -7,11 +7,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")]
     private float moveSpeed;
     public float walkSpeed;
-    public float sprintSpeed;
     public Transform orientation;
     float horizontalInput;
     float verticalInput;
     Vector3 moveDirection;
+    [Header("Sprinting")]
+    public float sprintSpeed;
     [Header("Ground Check")]
     public float groundDrag;
     public float playerHeight;
@@ -93,6 +94,7 @@ public class PlayerMovement : MonoBehaviour
             Invoke(nameof(ResetJump), jumpCooldown);
         }
 
+        //crouch animation
         if(Input.GetKey(crouchKey))
         {
             animator.SetBool("isCrouching", true);
@@ -102,6 +104,16 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.SetBool("isCrouching", false);
             readyToJump = true;
+        }
+
+        //sprint animation
+        if(Input.GetKeyDown(sprintKey))
+        {
+            animator.SetBool("isSprinting", true);
+        }
+        if(Input.GetKeyUp(sprintKey))
+        {
+            animator.SetBool("isSprinting", false);
         }
     }
 
