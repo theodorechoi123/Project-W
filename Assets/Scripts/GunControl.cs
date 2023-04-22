@@ -6,25 +6,18 @@ public class GunControl : MonoBehaviour
 {
     public Guns gun;
     public InventorySystem inventory;
+    public float pickupRange;
+    public Transform player;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
     {
-        
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if(other.gameObject.tag == "Player")
+        Vector3 distanceToPlayer = player.position - transform.position;
+        if(distanceToPlayer.magnitude <= pickupRange && Input.GetKeyDown(KeyCode.F))
         {
-            inventory.inv.Add(gameObject);
-            Destroy(gameObject);
+            inventory.AddToInv(gun.name);
+            Destroy(this.gameObject);
         }
     }
 }

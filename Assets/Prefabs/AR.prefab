@@ -309,6 +309,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gun: {fileID: 11400000, guid: 1d51d51a25e189243b9f3b299e6e6556, type: 2}
   inventory: {fileID: 0}
+  pickupRange: 4
+  player: {fileID: 0}
 --- !u!1 &7917659058608179732
 GameObject:
   m_ObjectHideFlags: 0

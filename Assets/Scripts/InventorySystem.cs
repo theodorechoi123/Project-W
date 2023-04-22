@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class InventorySystem : MonoBehaviour
 {
-    public List<GameObject> inv = new List<GameObject>();
+    [Header("Inventory")]
+    public List<string> inv = new List<string>();
 
 
     // Start is called before the first frame update
@@ -17,5 +18,11 @@ public class InventorySystem : MonoBehaviour
     void Update()
     {
         
+    }
+
+    //adding a gun to inventory
+    public void AddToInv(string gunName)
+    {
+        inv.Add(gunName);
     }
 }
